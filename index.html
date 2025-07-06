@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Weekly Work Hours Tracker - Free Online Tool</title>
+  <meta name="description" content="Track your weekly work hours easily with this free online calculator. Add daily work times, see your total instantly, and boost your productivity. Supports light and dark mode.">
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Inter font for modern look -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
+      background: linear-gradient(135deg, #e0e7ff 0%, #cfd9df 100%);
+      min-height: 100vh;
+      transition: background 0.3s;
+    }
+    .fade-in {
+      animation: fadeInUp 0.7s cubic-bezier(.39,.575,.565,1) both;
+    }
+    @keyframes fadeInUp {
+      0% {
+        opacity: 0;
+        transform: translateY(40px) scale(0.95);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+    .pulse {
+      animation: pulse 1.2s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(59,130,246,0.7);}
+      50% { box-shadow: 0 0 0 12px rgba(59,130,246,0.15);}
+    }
+    .remove-btn {
+      transition: background 0.2s;
+    }
+    .remove-btn:hover {
+      background: #fee2e2;
+    }
+    .theme-switch {
+      position: fixed;
+      right: max(1.5rem, env(safe-area-inset-right));
+      bottom: max(1.5rem, env(safe-area-inset-bottom));
+      z-index: 50;
+      display: flex;
+      align-items: center;
+      background: #fff;
+      color: #222;
+      border-radius: 9999px;
+      box-shadow: 0 2px 16px rgba(0,0,0,0.10);
+      padding: 0.5rem 1.25rem 0.5rem 0.75rem;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background 0.2s, color 0.2s;
+      user-select: none;
+    }
+    @media (max-width: 600px) {
+      .theme-switch {
+        right: max(0.5rem, env(safe-area-inset-right));
+        bottom: max(0.5rem, env(safe-area-inset-bottom));
+        padding: 0.5rem 1rem 0.5rem 0.5rem;
+      }
+    }
+    .theme-switch.dark {
+      background: #222;
+      color: #fff;
+    }
+    .switch-slider {
+      width: 48px;
+      height: 28px;
+      background: #e5e7eb;
+      border-radius: 9999px;
+      position: relative;
+      transition: background 0.2s;
+      margin: 0 0.5rem;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+    }
+    .switch-slider.dark {
+      background: #444;
+    }
+    .switch-knob {
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 22px;
+      height: 22px;
+      background: #fff;
+      border-radius: 50%;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.10);
+      transition: left 0.2s, background 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+    }
+    .switch-slider.dark .switch-knob {
+      left: 23px;
+      background: #222;
+      color: #fff;
+    }
+    body.dark {
+      background: linear-gradient(135deg, #232526 0%, #414345 100%);
+      color: #e5e7eb;
+    }
+    body.dark .bg-white\/80, body.dark .bg-white\/70, body.dark .bg-white, body.dark .bg-white\/90 {
+      background-color: #232526 !important;
+      color: #e5e7eb !important;
+    }
+    body.dark .text-gray-700, body.dark .text-purple-700 {
+      color: #e5e7eb !important;
+    }
+    body.dark .shadow-2xl, body.dark .shadow-lg, body.dark .shadow-xl {
+      box-shadow: 0 2px 16px rgba(0,0,0,0.40) !important;
+    }
+    body.dark input, body.dark textarea {
+      background: #333 !important;
+      color: #e5e7eb !important;
+      border-color: #555 !important;
+    }
+    body.dark .bg-gradient-to-r {
+      background: linear-gradient(90deg, #2563eb 0%, #6366f1 100%) !important;
+    }
+    body.dark .pulse {
+      animation: pulse-dark 1.2s infinite;
+    }
+    @keyframes pulse-dark {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(59,130,246,0.7);}
+      50% { box-shadow: 0 0 0 12px rgba(99,102,241,0.15);}
+    }
+  </style>
+</head>
+<body>
+  <div id="themeSwitch" class="theme-switch" tabindex="0" role="button" aria-pressed="false" aria-label="Toggle light or dark mode">
+    <span class="switch-slider" id="switchSlider">
+      <span class="switch-knob" id="switchKnob">☀️</span>
+    </span>
+  </div>
+  <main class="min-h-screen flex flex-col items-center justify-center py-8">
+    <section class="bg-white/80 rounded-3xl shadow-2xl p-8 w-full max-w-md backdrop-blur-md fade-in mb-8 mt-4">
+      <h1 class="text-3xl font-bold text-center mb-6 text-blue-700">Work Hours This Week</h1>
+      <form id="daysForm" class="flex flex-col gap-4"></form>
+      <div class="flex justify-center mt-4">
+        <button id="addDayBtn" type="button" class="flex items-center gap-2 px-5 py-2 rounded-full bg-gradient-to-r from-blue-500 to-indigo-500 text-white font-bold shadow-lg hover:scale-105 transition-transform">
+          <span class="text-xl">+</span> Add Day
+        </button>
+      </div>
+      <div class="mt-8 text-center">
+        <div id="totalBox" class="inline-block bg-gradient-to-r from-blue-500 to-indigo-500 text-white px-8 py-4 rounded-2xl shadow-xl text-2xl font-bold pulse">
+          Total: <span id="totalHours">0</span>h <span id="totalMinutes">0</span>m
+        </div>
+      </div>
+    </section>
+    <section class="max-w-2xl w-full bg-white/90 rounded-2xl shadow-lg p-6 fade-in">
+      <h2 class="text-2xl font-bold text-blue-700 mb-4">About This Work Hours Tracker</h2>
+      <p class="text-lg text-gray-700 mb-4">
+        <strong>What is a Work Hours Tracker?</strong><br>
+        A work hours tracker is a simple tool that helps you log and sum up the hours and minutes you work each day. Whether you're a freelancer, employee, student, or anyone who wants to keep track of time spent on tasks, this tool makes it easy to see your weekly totals at a glance.
+      </p>
+      <p class="text-gray-700 mb-4">
+        <strong>Why Track Your Hours?</strong><br>
+        Tracking your work hours helps you:
+        <ul class="list-disc list-inside ml-4">
+          <li>Stay organized and accountable</li>
+          <li>Identify productivity patterns</li>
+          <li>Ensure you're meeting goals or contract requirements</li>
+          <li>Prepare accurate timesheets for payroll or invoicing</li>
+          <li>Maintain a healthy work-life balance</li>
+        </ul>
+      </p>
+      <p class="text-gray-700 mb-4">
+        <strong>How to Use This Tool</strong><br>
+        <ol class="list-decimal list-inside ml-4">
+          <li>Click <b>+ Add Day</b> to add a new entry for each day you worked.</li>
+          <li>Enter the hours and minutes worked for each day.</li>
+          <li>Remove a day by clicking the <b>🗑</b> button next to it.</li>
+          <li>Your total hours and minutes for the week will update automatically.</li>
+        </ol>
+      </p>
+      <p class="text-gray-700 mb-4">
+        <strong>Who is this for?</strong><br>
+        <ul class="list-disc list-inside ml-4">
+          <li>Freelancers and contractors</li>
+          <li>Remote and office employees</li>
+          <li>Students tracking study or project time</li>
+          <li>Anyone who wants to manage their time better</li>
+        </ul>
+      </p>
+      <p class="text-gray-700 mb-4">
+        <strong>FAQ</strong><br>
+        <b>Q: Can I use this for more than a week?</b><br>
+        A: Yes! Add as many days as you need. The tool will sum up all entries.<br><br>
+        <b>Q: Is my data saved?</b><br>
+        A: For privacy, your data is not saved after you close or refresh the page. For persistent tracking, copy your totals elsewhere.
+      </p>
+      <p class="text-gray-700 mb-2">
+        <strong>Productivity Tips:</strong>
+        <ul class="list-disc list-inside ml-4">
+          <li>Log your hours daily for best accuracy.</li>
+          <li>Review your weekly totals to spot trends and improve time management.</li>
+          <li>Set goals for your work hours and track your progress.</li>
+        </ul>
+      </p>
+      <p class="text-gray-700 text-center mt-4">
+        <em>This tool is free, private, and works on any device. No sign-up required.</em>
+      </p>
+    </section>
+  </main>
+  <script>
+    // Theme switch logic
+    const themeSwitch = document.getElementById('themeSwitch');
+    const switchSlider = document.getElementById('switchSlider');
+    const switchKnob = document.getElementById('switchKnob');
+    function setTheme(dark) {
+      if (dark) {
+        document.body.classList.add('dark');
+        themeSwitch.classList.add('dark');
+        switchSlider.classList.add('dark');
+        switchKnob.textContent = '🌙';
+        themeSwitch.setAttribute('aria-pressed', 'true');
+      } else {
+        document.body.classList.remove('dark');
+        themeSwitch.classList.remove('dark');
+        switchSlider.classList.remove('dark');
+        switchKnob.textContent = '☀️';
+        themeSwitch.setAttribute('aria-pressed', 'false');
+      }
+    }
+    let darkMode = false;
+    themeSwitch.onclick = function() {
+      darkMode = !darkMode;
+      setTheme(darkMode);
+    };
+    themeSwitch.onkeydown = function(e) {
+      if (e.key === ' ' || e.key === 'Enter') {
+        darkMode = !darkMode;
+        setTheme(darkMode);
+      }
+    };
+    // Auto-detect system preference
+    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      darkMode = true;
+      setTheme(true);
+    } else {
+      setTheme(false);
+    }
+
+    // Work hours tracker logic
+    let dayId = 0;
+    const daysForm = document.getElementById('daysForm');
+    const addDayBtn = document.getElementById('addDayBtn');
+    const totalHours = document.getElementById('totalHours');
+    const totalMinutes = document.getElementById('totalMinutes');
+
+    function validateInput(e) {
+      const input = e.target;
+      if (input.classList.contains('hours-input')) {
+        if (parseInt(input.value) > 24) input.value = 24;
+        if (parseInt(input.value) < 0) input.value = 0;
+      }
+      if (input.classList.contains('minutes-input')) {
+        if (parseInt(input.value) > 59) input.value = 59;
+        if (parseInt(input.value) < 0) input.value = 0;
+      }
+    }
+
+    function createDayField(id) {
+      const wrapper = document.createElement('div');
+      wrapper.className = 'flex gap-2 items-center justify-center';
+      wrapper.id = `day-${id}`;
+      wrapper.innerHTML = `
+        <input type="number" min="0" max="24" class="w-32 p-2 rounded-lg border border-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-400 text-lg text-center bg-white/70 hours-input" placeholder="Hours" id="hours-${id}">
+        <span class="text-xl font-semibold">:</span>
+        <input type="number" min="0" max="59" class="w-32 p-2 rounded-lg border border-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-400 text-lg text-center bg-white/70 minutes-input" placeholder="Minutes" id="minutes-${id}">
+        <button type="button" class="remove-btn px-3 py-2 rounded-full text-red-500 text-xl font-bold" title="Remove this day" onclick="removeDay(${id})">🗑</button>
+      `;
+      // Add event listeners for input changes and validation
+      wrapper.querySelectorAll('input').forEach(input => {
+        input.addEventListener('input', validateInput);
+        input.addEventListener('input', updateTotal);
+      });
+      return wrapper;
+    }
+
+    function addDay() {
+      dayId++;
+      const field = createDayField(dayId);
+      daysForm.appendChild(field);
+      updateTotal();
+    }
+
+    window.removeDay = function(id) {
+      const el = document.getElementById(`day-${id}`);
+      if (el) {
+        el.remove();
+        updateTotal();
+      }
+    }
+
+    function updateTotal() {
+      let totalMins = 0;
+      daysForm.querySelectorAll('div[id^="day-"]').forEach(dayDiv => {
+        const hours = parseInt(dayDiv.querySelector('input[id^="hours-"]').value) || 0;
+        const mins = parseInt(dayDiv.querySelector('input[id^="minutes-"]').value) || 0;
+        totalMins += hours * 60 + mins;
+      });
+      totalHours.textContent = Math.floor(totalMins / 60);
+      totalMinutes.textContent = totalMins % 60;
+    }
+
+    addDayBtn.onclick = addDay;
+    // Add the first day field by default
+    addDay();
+  </script>
+</body>
+</html> 
